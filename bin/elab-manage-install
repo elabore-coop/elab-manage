@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Get the directory where the script resides
+SOURCE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# TODO : ${##*/}
+
+# Define the destination directory where the elab-update symbolic link will be created
+DEST_DIR="/usr/local/bin/"
+
+# Check if the elab-update script exists in the source directory
+if [ ! -f "$SOURCE_DIR/elab-update" ]; then
+    echo "Error: elab-update script not found in the source directory."
+    exit 1
+fi
+
+# Create a symbolic link to the elab-update script in the destination directory
+echo "Creating symbolic link to elab-update script in $DEST_DIR..."
+sudo ln -sf "$SOURCE_DIR/elab-update" "$DEST_DIR" || { echo "Error: Unable to create symbolic link."; exit 1; }
+
+echo "elab-update command has been successfully installed as a symbolic link."

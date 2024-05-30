@@ -1,0 +1,40 @@
+#!/bin/bash
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+## check disk usage and send a notification if it's above 75% or 90%
+
+percent_usage=$(df /srv -h)
+percent_usage=${percent_usage##*$'\n'}
+percent_usage=${percent_usage% *}
+percent_usage=${percent_usage##* }
+percent_usage=${percent_usage%\%}
+
+STATE_WORKING_DIR="/var/run/elab-manage"
+mkdir -p "$STATE_WORKING_DIR"
+
+if [ "$percent_usage" -ge "90" ]; then
+   if [ -e $STATE_WORKING_DIR/disk_usage_90.state ]; then
+      exit 0
+   else
+      touch $STATE_WORKING_DIR/disk_usage_90.state
+      message="$(hostname): WARNING disk usage >=90%"
+      send -c disk.crit "$message"
+   fi
+elif [ "$percent_usage" -ge "75" ]; then
+   if [ -e $STATE_WORKING_DIR/disk_usage_75.state ]; then
+      exit 0
+   else
+      touch $STATE_WORKING_DIR/disk_usage_75.state
+      message="$(hostname): WARNING disk usage >=75 <90%"
+      send -c disk.alert "$message"
+   fi
+else
+   if [ -e $STATE_WORKING_DIR/disk_usage_75.state ]; then
+      rm $STATE_WORKING_DIR/disk_usage_75.state
+   fi
+   if [ -e $STATE_WORKING_DIR/disk_usage_90.state ]; then
+      rm $STATE_WORKING_DIR/disk_usage_90.state
+   fi
+fi

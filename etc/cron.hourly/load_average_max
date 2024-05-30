@@ -1,0 +1,32 @@
+#!/bin/bash
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+MAX_PER_PROC=3
+
+## integer only for the 5m load avg
+
+LOCK_WORKING_DIR="/var/run/elab-manage"
+mkdir -p "$LOCK_WORKING_DIR"
+
+int_avg=$(while read line; do
+              echo "$line"
+          done < /proc/loadavg)
+int_avg=${int_avg#* }
+int_avg=${int_avg%%.*}
+max=$[$MAX_PER_PROC * $(grep -c ^processor /proc/cpuinfo)]
+if [ "$int_avg" -gt "$max" ]; then
+    if [ -e $LOCK_WORKING_DIR/load_average_max.lock ]; then
+        exit 0
+    else
+        touch   $LOCK_WORKING_DIR/load_average_max.lock
+        message="[$(hostname)] : WARNING - load average ($int_avg) is above max per processor : ($MAX_PER_PROC * $(grep -c ^processor /proc/cpuinfo) = $max)"
+        echo $message | logger -t load_average_max
+        send "$message"
+    fi
+else 
+    if [ -e $LOCK_WORKING_DIR/load_average_max.lock ]; then
+        rm $LOCK_WORKING_DIR/load_average_max.lock
+    fi
+fi

@@ -1,0 +1,7 @@
+#!/bin/bash 
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+## Remove every .state file older than 48h -- Cleanup script if the others aren’t strong enougth    
+find /var/run/elab-manage -name "*.state" -type f -mtime +2 -delete

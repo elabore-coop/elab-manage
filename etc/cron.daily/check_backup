@@ -1,0 +1,52 @@
+#!/bin/bash
+
+## Check if backup with rsync-backup is set and less than 24hours
+## Send warning threw NTFY
+## log this in journalctl with logger `journactl -t backup` 
+
+
+STATE_FILE="/var/run/elab-manage/backup.state"
+LOGGER_TAG="check_backup"
+mkdir -p "${STATE_FILE%/*}"
+
+source "/etc/compose/local.conf" || exit 1
+
+## check if service exists in compose.yml
+if ! grep -q "^rsync-backup" "$DEFAULT_COMPOSE_FILE"; then
+    echo "no service rsync-backup - Ignoring."
+    exit 0 
+fi
+
+last_backup_datetime=$(
+    cat /srv/datastore/data/cron/var/log/cron/*rsync-backup_script{_*,}.log | grep "total size is" | sort | tail -n 1 | cut -f -2 -d " ")
+last_backup_ts=$(date -d "$last_backup_datetime" +%s)
+max_ts=$(date -d "24 hours ago" +%s)
+
+state="ok"
+if [ "$last_backup_ts" -lt "$max_ts" ]; then
+    state="ko"
+fi
+
+if [ "$state" == "ok" ]; then
+    echo "Everything is ok. (last backup: $last_backup_datetime)" | logger -t "$LOGGER_TAG"
+    exit 0
+fi
+
+## notify
+
+last_state=$(cat "$STATE_FILE" 2>/dev/null) || true
+if [ "$state" == "$last_state" ]; then
+    [ "$state" == "ko" ] || exit 0
+    is_old=$(find "$STATE_FILE" -type f -mtime +2) || return 1
+    [ -n "$is_old" ] || exit 0
+fi
+
+echo "$state" > "$STATE_FILE"
+
+timestamp=$(date +%s)
+time_difference=$((timestamp - last_backup_ts))
+days=$((time_difference / 86400))
+hours=$((time_difference % 86400 / 3600))
+message="WARNING: no backup done in the last 24h (No backup since $days days and $hours hours)"
+echo "$message" | logger -t "$LOGGER_TAG"
+send -t "Backup" -c backup.warning "$message"

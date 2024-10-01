@@ -1,5 +1,4 @@
 #!/bin/bash
-
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
@@ -19,7 +18,8 @@ if [ "$percent_usage" -ge "90" ]; then
       exit 0
    else
       touch $STATE_WORKING_DIR/disk_usage_90.state
-      message="$(hostname): WARNING disk usage >=90%"
+      message="$(hostname): CRITICAL : disk usage ${percent_usage}%"
+      echo "$message"
       send -c disk.crit "$message"
    fi
 elif [ "$percent_usage" -ge "75" ]; then
@@ -27,7 +27,7 @@ elif [ "$percent_usage" -ge "75" ]; then
       exit 0
    else
       touch $STATE_WORKING_DIR/disk_usage_75.state
-      message="$(hostname): WARNING disk usage >=75 <90%"
+      message="$(hostname): WARNING disk usage is ${percent_usage}%"
       send -c disk.alert "$message"
    fi
 else

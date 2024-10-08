@@ -2,7 +2,7 @@
 
 ## Check if backup with rsync-backup is set and less than 24hours
 ## Send warning threw NTFY
-## log this in journalctl with logger `journactl -t backup` 
+## log this in journalctl with logger `journactl -t backup`
 
 
 STATE_FILE="/var/run/elab-manage/backup.state"
@@ -14,7 +14,7 @@ source "/etc/compose/local.conf" || exit 1
 ## check if service exists in compose.yml
 if ! grep -q "^rsync-backup" "$DEFAULT_COMPOSE_FILE"; then
     echo "no service rsync-backup - Ignoring."
-    exit 0 
+    exit 0
 fi
 
 last_backup_datetime=$(
@@ -47,6 +47,6 @@ timestamp=$(date +%s)
 time_difference=$((timestamp - last_backup_ts))
 days=$((time_difference / 86400))
 hours=$((time_difference % 86400 / 3600))
-message="WARNING: no backup done in the last 24h (No backup since $days days and $hours hours)"
+message="ALERT: no backup done in the last 24h (No backup since $days days and $hours hours)"
 echo "$message" | logger -t "$LOGGER_TAG"
-send -t "Backup" -c backup.warning "$message"
+send -t "Backup" -c backup.alert "$message"

@@ -6,13 +6,13 @@ REPO_PATH="/opt/apps/elab-manage"
 # Function to update the git repository
 update_repo() {
     echo "Updating the git repository..."
-    cd "$REPO_PATH" || { 
-        echo "Error: Unable to find the repository at $REPO_PATH"; 
+    cd "$REPO_PATH" || {
+        echo "Error: Unable to find the repository at $REPO_PATH";
         exit 1;
          }
-    git pull -r || { 
-        echo "Error: Unable to update the repository"; 
-        exit 1; 
+    git pull -r || {
+        echo "Error: Unable to update the repository";
+        exit 1;
         }
 }
 
@@ -22,9 +22,9 @@ update_repo() {
 update_symlinks() {
     echo "Updating symbolic links for cron.daily..."
     # Update or add new symbolic links for cron.daily and cron.hourly
-    for dir in "cron."{daily,hourly}; do
+    for dir in "cron."{d,daily,hourly,mounthly,weekly}; do
         find -L /etc/$dir -maxdepth 1 -type l -ilname $REPO_PATH/etc/$dir\* -delete
-        ln -sf $REPO_PATH/etc/$dir/* /etc/$dir   
+        ln -sf $REPO_PATH/etc/$dir/* /etc/$dir
     done
 
     echo "Symbolic links have been successfully updated."

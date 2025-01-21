@@ -1,0 +1,35 @@
+#!/bin/bash
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+## launch vps check-service and if the result is not empty, send a notification
+## If the result is empty, remove the state file
+## ``vps check-service`` output is filled only if there is a problem
+
+
+STATE_WORKING_DIR="/var/run/elab-manage"
+mkdir -p "$STATE_WORKING_DIR"
+STATE_CHECK_SERVICE="$STATE_WORKING_DIR/check_service.state"
+
+
+vps_check_service=$(vps check-service)
+
+if [ -n "$vps_check_service" ]; then
+    msg="New"
+    if [ -e "$STATE_CHECK_SERVICE" ]; then
+        if [[ "$(cat "$STATE_CHECK_SERVICE")" == "$vps_check_service" ]]; then
+            exit 0
+        fi
+        msg="Changed"
+    fi
+
+    echo "$vps_check_service" > "$STATE_CHECK_SERVICE"
+    title="alert: check-service failed"
+    message="$vps_check_service"
+    echo "MESSAGE: '$message'" >&2
+    send -c check-service.alert -t "$title ($msg)" "$message"
+else
+    if [ -e "$STATE_CHECK_SERVICE" ]; then
+        rm "$STATE_CHECK_SERVICE"
+    fi
+fi

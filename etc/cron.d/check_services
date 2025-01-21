@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+*/10 * * * * root lock check_services_elabore -v -D -p 10 -k -c "/opt/apps/elab-manage/bin/cron/check_services" 2>&1 | logger -t check-services-elabore

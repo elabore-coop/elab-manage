@@ -27,7 +27,7 @@ if [ -n "$vps_check_service" ]; then
     title="alert: check-service failed"
     message="$vps_check_service"
     echo "MESSAGE: '$message'" >&2
-    send -c check-service.alert -t "$title ($msg)" "$message"
+    send -c check-service.warning -t "$title ($msg)" "$message"
 else
     if [ -e "$STATE_CHECK_SERVICE" ]; then
         rm "$STATE_CHECK_SERVICE"

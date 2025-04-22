@@ -22,9 +22,12 @@ update_repo() {
 update_symlinks() {
     echo "Updating symbolic links for cron.daily..."
     # Update or add new symbolic links for cron.daily and cron.hourly
-    for dir in "cron."{d,daily,hourly,mounthly,weekly}; do
+    for dir in "cron."{d,daily,hourly,monthly,weekly}; do
         find -L /etc/$dir -maxdepth 1 -type l -ilname $REPO_PATH/etc/$dir\* -delete
-        ln -sf $REPO_PATH/etc/$dir/* /etc/$dir
+        ## test if the directory is empty or exist to avoid creating empty links
+        if compgen -G "$REPO_PATH/etc/$dir/*" > /dev/null; then
+            ln -sf "$REPO_PATH/etc/$dir/"* "/etc/$dir"
+        fi
     done
 
     echo "Symbolic links have been successfully updated."

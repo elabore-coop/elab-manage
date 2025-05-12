@@ -1,0 +1,5 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+30 23 * * *   root   lock odoo_log_errors -v -D -p 10 -k -c "/opt/apps/elab-manage/bin/cron/check_error_odoo_log" 2>&1 | logger -t check-error-odoo-log
+

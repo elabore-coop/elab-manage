@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ODOO_SERVICE_NAME=$(compose status -c name,charm -r | grep odoo-tecnativa | cut -d" " -f1)
+
+if [ -z "$ODOO_SERVICE_NAME" ]; then
+    echo "Odoo service not found"
+    exit 1
+fi
+
+ODOO_LOG="/srv/datastore/data/$ODOO_SERVICE_NAME/var/log/odoo/odoo.log"
+
+odoo_daily_errors=$(cat "$ODOO_LOG" | grep $(date -I) | grep ERROR)
+
+if [ -n "$odoo_daily_errors" ]; then
+   send -c odoo.err -t "Odoo daily Errors" "$odoo_daily_errors"
+   #echo "$odoo_daily_errors"
+fi

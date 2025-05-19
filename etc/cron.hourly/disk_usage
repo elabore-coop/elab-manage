@@ -20,7 +20,7 @@ if [ "$percent_usage" -ge "90" ]; then
       touch $STATE_WORKING_DIR/disk_usage_90.state
       message="ALERT : disk usage ${percent_usage}%"
       echo "$message"
-      send -c disk.alert "$message"
+      send -c disk.alert -t "$message" "$message"
    fi
 elif [ "$percent_usage" -ge "75" ]; then
    if [ -e $STATE_WORKING_DIR/disk_usage_75.state ]; then
@@ -28,7 +28,7 @@ elif [ "$percent_usage" -ge "75" ]; then
    else
       touch $STATE_WORKING_DIR/disk_usage_75.state
       message="WARNING disk usage is ${percent_usage}%"
-      send -c disk.warning "$message"
+      send -c disk.warning -t "$message" "$message"
    fi
 else
    if [ -e $STATE_WORKING_DIR/disk_usage_75.state ]; then
